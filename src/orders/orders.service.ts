@@ -4,7 +4,7 @@ import { CreateOrderDto } from './dto/create-order.dto';
 @Injectable()
 export class OrdersService {
   create(createOrderDto: CreateOrderDto) {
-    return createOrderDto;
+    return 'This action adds a new order';
   }
 
   findAll() {

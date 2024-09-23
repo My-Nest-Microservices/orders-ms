@@ -14,19 +14,34 @@ export class OrdersService extends PrismaClient implements OnModuleInit {
     return this.order.create({ data: createOrderDto });
   }
 
-  findAll(orderPaginationDto: OrderPaginationDto) {
+  async findAll(orderPaginationDto: OrderPaginationDto) {
     const { status, limit, page } = orderPaginationDto;
 
-    return this.order.findMany({
+    const totalPages = await this.order.count({
       where: {
         status,
       },
-      skip: (page - 1) * limit,
-      take: limit,
-      orderBy: {
-        createdAt: 'desc',
-      },
     });
+
+    const currentPage = page;
+
+    return {
+      data: await this.order.findMany({
+        where: {
+          status,
+        },
+        skip: (page - 1) * limit,
+        take: limit,
+        orderBy: {
+          createdAt: 'desc',
+        },
+      }),
+      meta: {
+        total: totalPages,
+        currentPage,
+        lastPage: Math.ceil(totalPages / limit),
+      },
+    };
   }
 
   async findOne(id: string) {

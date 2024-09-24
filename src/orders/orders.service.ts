@@ -26,9 +26,7 @@ export class OrdersService extends PrismaClient implements OnModuleInit {
     this.logger.log('Connected to database');
   }
 
-  async create(createOrderDto: CreateOrderDto) {
-    const ids = createOrderDto.items.map((item) => item.productId);
-
+  private async validateProducts(ids: number[]) {
     const products: any[] = await firstValueFrom(
       this.productClient.send({ cmd: 'validate_products' }, ids).pipe(
         catchError((error) => {
@@ -36,6 +34,14 @@ export class OrdersService extends PrismaClient implements OnModuleInit {
         }),
       ),
     );
+
+    return products;
+  }
+
+  async create(createOrderDto: CreateOrderDto) {
+    const ids = createOrderDto.items.map((item) => item.productId);
+
+    const products: any[] = await this.validateProducts(ids);
 
     const totalAmount = createOrderDto.items.reduce((acc, item) => {
       const price = products.find(
@@ -119,6 +125,15 @@ export class OrdersService extends PrismaClient implements OnModuleInit {
   async findOne(id: string) {
     const order = await this.order.findUnique({
       where: { id },
+      include: {
+        OrderItem: {
+          select: {
+            price: true,
+            quantity: true,
+            productId: true,
+          },
+        },
+      },
     });
 
     if (!order) {
@@ -128,7 +143,16 @@ export class OrdersService extends PrismaClient implements OnModuleInit {
       });
     }
 
-    return order;
+    const ids = order.OrderItem.map((item) => item.productId);
+    const products: any[] = await this.validateProducts(ids);
+
+    return {
+      ...order,
+      OrderItem: order.OrderItem.map((item) => ({
+        ...item,
+        name: products.find((product) => product.id === item.productId).name,
+      })),
+    };
   }
 
   async changeOrderStatus(changeStatusDto: ChangeStatusDto) {

@@ -16,8 +16,8 @@ const envsSchema = joi
     PORT: joi.number().required(),
     // DATABASE_URL: joi.string().required(),
 
-    PRODUCTS_MICROSERVICE_HOST: joi.string().required(),
-    PRODUCTS_MICROSERVICE_PORT: joi.number().required(),
+    // PRODUCTS_MICROSERVICE_HOST: joi.string().required(),
+    // PRODUCTS_MICROSERVICE_PORT: joi.number().required(),
 
     NATS_SERVERS: joi.array().items(joi.string().required()).required(),
   })
@@ -38,8 +38,8 @@ export const envs = {
   port: envVars.PORT,
   databaseUrl: envVars.DATABASE_URL,
 
-  productsHost: envVars.PRODUCTS_MICROSERVICE_HOST,
-  productsPort: envVars.PRODUCTS_MICROSERVICE_PORT,
+  // productsHost: envVars.PRODUCTS_MICROSERVICE_HOST,
+  // productsPort: envVars.PRODUCTS_MICROSERVICE_PORT,
 
   natsServers: envVars.NATS_SERVERS,
 };

@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { OrdersController } from './orders.controller';
-import { NatsModule } from 'src/nats/nats.module';
+import { NatsModule } from 'src/transport/nats.module';
 
 @Module({
   controllers: [OrdersController],

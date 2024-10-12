@@ -15,9 +15,7 @@ import { catchError, firstValueFrom } from 'rxjs';
 export class OrdersService extends PrismaClient implements OnModuleInit {
   private readonly logger = new Logger('OrdersService');
 
-  constructor(
-    @Inject(NATS_SERVICE) private readonly productClient: ClientProxy,
-  ) {
+  constructor(@Inject(NATS_SERVICE) private readonly client: ClientProxy) {
     super();
   }
 
@@ -28,7 +26,7 @@ export class OrdersService extends PrismaClient implements OnModuleInit {
 
   private async validateProducts(ids: number[]) {
     const products: any[] = await firstValueFrom(
-      this.productClient.send({ cmd: 'validate_products' }, ids).pipe(
+      this.client.send({ cmd: 'validate_products' }, ids).pipe(
         catchError((error) => {
           throw new RpcException(error);
         }),

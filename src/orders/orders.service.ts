@@ -5,8 +5,13 @@ import {
   Logger,
   OnModuleInit,
 } from '@nestjs/common';
-import { ChangeStatusDto, CreateOrderDto, OrderPaginationDto } from './dto';
-import { PrismaClient } from '@prisma/client';
+import {
+  ChangeStatusDto,
+  CreateOrderDto,
+  OrderPaginationDto,
+  PaidOrderDto,
+} from './dto';
+import { OrderStatus, PrismaClient } from '@prisma/client';
 import { ClientProxy, RpcException } from '@nestjs/microservices';
 import { NATS_SERVICE } from 'src/config';
 import { catchError, firstValueFrom } from 'rxjs';
@@ -198,5 +203,38 @@ export class OrdersService extends PrismaClient implements OnModuleInit {
     } catch (error) {
       throw new RpcException(error);
     }
+  }
+
+  async paidOrder(paidOrderDto: PaidOrderDto) {
+    this.logger.log('Paid Order');
+    this.logger.log(paidOrderDto);
+
+    const order = await this.findOne(paidOrderDto.orderId);
+
+    if (order.paid) {
+      throw new RpcException({
+        status: HttpStatus.BAD_REQUEST,
+        message: `Order with id ${paidOrderDto.orderId} already paid`,
+      });
+    }
+
+    const updatedOrder = await this.order.update({
+      where: {
+        id: paidOrderDto.orderId,
+      },
+      data: {
+        status: OrderStatus.PAID,
+        stripeChargeId: paidOrderDto.stripePaymentId,
+        paidAt: new Date(),
+        paid: true,
+        OrderReceipt: {
+          create: {
+            receiptUrl: paidOrderDto.receiptUrl,
+          },
+        },
+      },
+    });
+
+    return updatedOrder;
   }
 }

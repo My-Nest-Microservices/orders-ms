@@ -25,11 +25,11 @@ model Order {
   totalAmount Float
   totalItems  Int
 
-  status        OrderStatus @default(PENDING)
-  paid          Boolean     @default(false)
-  paidAt        DateTime?
-  stripeCargeId String
-  receiptId     String
+  status         OrderStatus @default(PENDING)
+  paid           Boolean     @default(false)
+  paidAt         DateTime?
+  stripeChargeId String?
+  receiptId      String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -41,13 +41,12 @@ model Order {
 }
 
 model OrderItem {
-  id        String @id @default(uuid())
+  id        String  @id @default(uuid())
   productId Int
   quantity  Int
   price     Float
-
-  Order   Order?  @relation(fields: [orderId], references: [id])
-  orderId String?
+  Order     Order?  @relation(fields: [orderId], references: [id])
+  orderId   String?
 }
 
 model OrderReceipt {
